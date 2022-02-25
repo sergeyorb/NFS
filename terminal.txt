@@ -1,0 +1,269 @@
+[root@nfss ~]# yum install nfs-utils
+Failed to set locale, defaulting to C
+Loaded plugins: fastestmirror
+Determining fastest mirrors
+ * base: mirror.yandex.ru
+ * extras: ftp.nsc.ru
+ * updates: mirror.yandex.ru
+base                                                                                                  | 3.6 kB  00:00:00
+extras                                                                                                | 2.9 kB  00:00:00
+updates                                                                                               | 2.9 kB  00:00:00
+(1/4): base/7/x86_64/group_gz                                                                         | 153 kB  00:00:00
+(2/4): extras/7/x86_64/primary_db                                                                     | 243 kB  00:00:00
+(3/4): updates/7/x86_64/primary_db                                                                    |  14 MB  00:00:02
+(4/4): base/7/x86_64/primary_db                                                                       | 6.1 MB  00:00:03
+Resolving Dependencies
+--> Running transaction check
+---> Package nfs-utils.x86_64 1:1.3.0-0.66.el7 will be updated
+---> Package nfs-utils.x86_64 1:1.3.0-0.68.el7.2 will be an update
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+=============================================================================================================================
+ Package                     Arch                     Version                                Repository                 Size
+=============================================================================================================================
+Updating:
+ nfs-utils                   x86_64                   1:1.3.0-0.68.el7.2                     updates                   413 k
+
+Transaction Summary
+=============================================================================================================================
+Upgrade  1 Package
+
+Total download size: 413 k
+Is this ok [y/d/N]: y
+Downloading packages:
+No Presto metadata available for updates
+warning: /var/cache/yum/x86_64/7/updates/packages/nfs-utils-1.3.0-0.68.el7.2.x86_64.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+Public key for nfs-utils-1.3.0-0.68.el7.2.x86_64.rpm is not installed
+nfs-utils-1.3.0-0.68.el7.2.x86_64.rpm                                                                 | 413 kB  00:00:00
+Retrieving key from file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+Importing GPG key 0xF4A80EB5:
+ Userid     : "CentOS-7 Key (CentOS 7 Official Signing Key) <security@centos.org>"
+ Fingerprint: 6341 ab27 53d7 8a78 a7c2 7bb1 24c6 a8a7 f4a8 0eb5
+ Package    : centos-release-7-8.2003.0.el7.centos.x86_64 (@anaconda)
+ From       : /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+Is this ok [y/N]: y
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Updating   : 1:nfs-utils-1.3.0-0.68.el7.2.x86_64                                                                       1/2
+  Cleanup    : 1:nfs-utils-1.3.0-0.66.el7.x86_64                                                                         2/2
+  Verifying  : 1:nfs-utils-1.3.0-0.68.el7.2.x86_64                                                                       1/2
+  Verifying  : 1:nfs-utils-1.3.0-0.66.el7.x86_64                                                                         2/2
+
+Updated:
+  nfs-utils.x86_64 1:1.3.0-0.68.el7.2
+
+Complete!
+[root@nfss ~]#
+
+[root@nfss ~]# systemctl enable firewalld --now
+Created symlink from /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service to /usr/lib/systemd/system/firewalld.service.
+Created symlink from /etc/systemd/system/multi-user.target.wants/firewalld.service to /usr/lib/systemd/system/firewalld.service.
+[root@nfss ~]# systemctl status firewalld
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2022-02-25 12:34:24 UTC; 48s ago
+     Docs: man:firewalld(1)
+ Main PID: 21998 (firewalld)
+   CGroup: /system.slice/firewalld.service
+           └─21998 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
+
+Feb 25 12:34:23 nfss systemd[1]: Starting firewalld - dynamic firewall daemon...
+Feb 25 12:34:24 nfss systemd[1]: Started firewalld - dynamic firewall daemon.
+Feb 25 12:34:24 nfss firewalld[21998]: WARNING: AllowZoneDrifting is enabled. This is considered an insecure configu...t now.
+Hint: Some lines were ellipsized, use -l to show in full.
+[root@nfss ~]# firewall-cmd --add-service="nfs3" \ --add-service="rpc-bind" \ --add-service="mountd" \ --permanent
+usage: see firewall-cmd man page
+firewall-cmd: error: unrecognized arguments:  --add-service=rpc-bind  --add-service=mountd  --permanent
+[root@nfss ~]# firewall-cmd --add-service="nfs3"
+success
+[root@nfss ~]# firewall-cmd --add-service="rpc-bind"
+success
+[root@nfss ~]# firewall-cmd --add-service="mountd" \ --permanent
+usage: see firewall-cmd man page
+firewall-cmd: error: unrecognized arguments:  --permanent
+[root@nfss ~]# firewall-cmd --add-service="mountd"
+success
+[root@nfss ~]# firewall-cmd --permanent
+usage: see firewall-cmd man page
+No option specified.
+[root@nfss ~]# firewall-cmd --reload
+success
+[root@nfss ~]#
+[root@nfss ~]# systemctl enable nfs --now
+Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.service to /usr/lib/systemd/system/nfs-server.service.
+[root@nfss ~]# ss -tnplu
+Netid State      Recv-Q Send-Q               Local Address:Port                              Peer Address:Port
+udp   UNCONN     0      0                                *:2049                                         *:*
+udp   UNCONN     0      0                        127.0.0.1:323                                          *:*                   users:(("chronyd",pid=352,fd=5))
+udp   UNCONN     0      0                                *:68                                           *:*                   users:(("dhclient",pid=2294,fd=6))
+udp   UNCONN     0      0                                *:39504                                        *:*                   users:(("rpc.statd",pid=22181,fd=8))
+udp   UNCONN     0      0                                *:20048                                        *:*                   users:(("rpc.mountd",pid=22194,fd=7))
+udp   UNCONN     0      0                                *:111                                          *:*                   users:(("rpcbind",pid=340,fd=6))
+udp   UNCONN     0      0                                *:926                                          *:*                   users:(("rpcbind",pid=340,fd=7))
+udp   UNCONN     0      0                                *:41388                                        *:*
+udp   UNCONN     0      0                        127.0.0.1:733                                          *:*                   users:(("rpc.statd",pid=22181,fd=5))
+udp   UNCONN     0      0                             [::]:2049                                      [::]:*
+udp   UNCONN     0      0                            [::1]:323                                       [::]:*                   users:(("chronyd",pid=352,fd=6))
+udp   UNCONN     0      0                             [::]:41284                                     [::]:*
+udp   UNCONN     0      0                             [::]:20048                                     [::]:*                   users:(("rpc.mountd",pid=22194,fd=9))
+udp   UNCONN     0      0                             [::]:111                                       [::]:*                   users:(("rpcbind",pid=340,fd=9))
+udp   UNCONN     0      0                             [::]:926                                       [::]:*                   users:(("rpcbind",pid=340,fd=10))
+udp   UNCONN     0      0                             [::]:41686                                     [::]:*                   users:(("rpc.statd",pid=22181,fd=10))
+tcp   LISTEN     0      64                               *:41153                                        *:*
+tcp   LISTEN     0      64                               *:2049                                         *:*
+tcp   LISTEN     0      128                              *:51686                                        *:*                   users:(("rpc.statd",pid=22181,fd=9))
+tcp   LISTEN     0      128                              *:111                                          *:*                   users:(("rpcbind",pid=340,fd=8))
+tcp   LISTEN     0      128                              *:20048                                        *:*                   users:(("rpc.mountd",pid=22194,fd=8))
+tcp   LISTEN     0      128                              *:22                                           *:*                   users:(("sshd",pid=624,fd=3))
+tcp   LISTEN     0      100                      127.0.0.1:25                                           *:*                   users:(("master",pid=850,fd=13))
+tcp   LISTEN     0      64                            [::]:2049                                      [::]:*
+tcp   LISTEN     0      128                           [::]:52774                                     [::]:*                   users:(("rpc.statd",pid=22181,fd=11))
+tcp   LISTEN     0      64                            [::]:44492                                     [::]:*
+tcp   LISTEN     0      128                           [::]:111                                       [::]:*                   users:(("rpcbind",pid=340,fd=11))
+tcp   LISTEN     0      128                           [::]:20048                                     [::]:*                   users:(("rpc.mountd",pid=22194,fd=10))
+tcp   LISTEN     0      128                           [::]:22                                        [::]:*                   users:(("sshd",pid=624,fd=4))
+tcp   LISTEN     0      100                          [::1]:25                                        [::]:*                   users:(("master",pid=850,fd=14))
+[root@nfss ~]#
+[root@nfss ~]# mkdir -p /srv/share/upload
+[root@nfss ~]# chown -R nfsnobody:nfsnobody /srv/share
+[root@nfss ~]# chmod 0777 /srv/share/upload
+[root@nfss ~]# cat<<EOF> /etc/exports
+> /srv/share 192.168.50.11/32(rw,sync,root_squash)
+> EOF
+[root@nfss ~]# exportfs -r
+[root@nfss ~]# exportfs -s
+/srv/share  192.168.50.11/32(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,root_squash,no_all_squash)
+[root@nfss ~]#
+[vagrant@nfss ~]$ exit
+logout
+Connection to 127.0.0.1 closed.
+sergey@Ubuntu-Desktop:~/vagrant/NFS$ vagrant ssh nfsc
+[vagrant@nfsc ~]$ sudo -i
+[root@nfsc ~]# yum install nfs-utils
+Failed to set locale, defaulting to C
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.docker.ru
+ * extras: mirror.corbina.net
+ * updates: mirror.reconn.ru
+base                                                                                                  | 3.6 kB  00:00:00
+extras                                                                                                | 2.9 kB  00:00:00
+updates                                                                                               | 2.9 kB  00:00:00
+(1/4): base/7/x86_64/group_gz                                                                         | 153 kB  00:00:00
+(2/4): extras/7/x86_64/primary_db                                                                     | 243 kB  00:00:00
+(3/4): base/7/x86_64/primary_db                                                                       | 6.1 MB  00:00:02
+(4/4): updates/7/x86_64/primary_db                                                                    |  14 MB  00:00:05
+Resolving Dependencies
+--> Running transaction check
+---> Package nfs-utils.x86_64 1:1.3.0-0.66.el7 will be updated
+---> Package nfs-utils.x86_64 1:1.3.0-0.68.el7.2 will be an update
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+=============================================================================================================================
+ Package                     Arch                     Version                                Repository                 Size
+=============================================================================================================================
+Updating:
+ nfs-utils                   x86_64                   1:1.3.0-0.68.el7.2                     updates                   413 k
+
+Transaction Summary
+=============================================================================================================================
+Upgrade  1 Package
+
+Total download size: 413 k
+Is this ok [y/d/N]: y
+Downloading packages:
+No Presto metadata available for updates
+warning: /var/cache/yum/x86_64/7/updates/packages/nfs-utils-1.3.0-0.68.el7.2.x86_64.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+Public key for nfs-utils-1.3.0-0.68.el7.2.x86_64.rpm is not installed
+nfs-utils-1.3.0-0.68.el7.2.x86_64.rpm                                                                 | 413 kB  00:00:00
+Retrieving key from file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+Importing GPG key 0xF4A80EB5:
+ Userid     : "CentOS-7 Key (CentOS 7 Official Signing Key) <security@centos.org>"
+ Fingerprint: 6341 ab27 53d7 8a78 a7c2 7bb1 24c6 a8a7 f4a8 0eb5
+ Package    : centos-release-7-8.2003.0.el7.centos.x86_64 (@anaconda)
+ From       : /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+Is this ok [y/N]: y
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Updating   : 1:nfs-utils-1.3.0-0.68.el7.2.x86_64                                                                       1/2
+  Cleanup    : 1:nfs-utils-1.3.0-0.66.el7.x86_64                                                                         2/2
+  Verifying  : 1:nfs-utils-1.3.0-0.68.el7.2.x86_64                                                                       1/2
+  Verifying  : 1:nfs-utils-1.3.0-0.66.el7.x86_64                                                                         2/2
+
+Updated:
+  nfs-utils.x86_64 1:1.3.0-0.68.el7.2
+
+Complete!
+[root@nfsc ~]#
+[root@nfsc ~]# systemctl enable firewalld --now
+Created symlink from /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service to /usr/lib/systemd/system/firewalld.service.
+Created symlink from /etc/systemd/system/multi-user.target.wants/firewalld.service to /usr/lib/systemd/system/firewalld.service.
+[root@nfsc ~]# systemctl status firewalld
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2022-02-25 13:37:09 UTC; 22s ago
+     Docs: man:firewalld(1)
+ Main PID: 22052 (firewalld)
+   CGroup: /system.slice/firewalld.service
+           └─22052 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
+
+Feb 25 13:37:08 nfsc systemd[1]: Starting firewalld - dynamic firewall daemon...
+Feb 25 13:37:09 nfsc systemd[1]: Started firewalld - dynamic firewall daemon.
+Feb 25 13:37:09 nfsc firewalld[22052]: WARNING: AllowZoneDrifting is enabled. This is considered an insecure configu...t now.
+Hint: Some lines were ellipsized, use -l to show in full.
+[root@nfsc ~]# echo "192.168.50.10:/srv/share/ /mnt nfs vers=3,proto=udp,noauto,x-systemd.automount 0 0" >> /etc/tstab
+[root@nfsc ~]# systemctl daemon-reload
+[root@nfsc ~]# systemctl restart remote-fs.target
+[root@nfsc ~]# mount | grep mnt
+[root@nfsc ~]# system-1 on /mnt type autofs
+-bash: system-1: command not found
+[root@nfsc ~]# ^C
+[root@nfsc ~]# exit
+logout
+[vagrant@nfsc ~]$ exit
+logout
+Connection to 127.0.0.1 closed.
+sergey@Ubuntu-Desktop:~/vagrant/NFS$ vagrant ssh nfss
+Last login: Fri Feb 25 10:54:26 2022 from 10.0.2.2
+[vagrant@nfss ~]$ cd /srv/share/upload
+[vagrant@nfss upload]$ pwd
+/srv/share/upload
+[vagrant@nfss upload]$ touch check_file
+[vagrant@nfss upload]$ ls
+check_file
+[vagrant@nfss upload]$ exit
+logout
+Connection to 127.0.0.1 closed.
+sergey@Ubuntu-Desktop:~/vagrant/NFS$ vagrant ssh nfss
+Last login: Fri Feb 25 13:58:23 2022 from 10.0.2.2
+[vagrant@nfss ~]$ exit
+logout
+Connection to 127.0.0.1 closed.
+sergey@Ubuntu-Desktop:~/vagrant/NFS$ vagrant ssh nfsc
+Last login: Fri Feb 25 13:26:47 2022 from 10.0.2.2
+[vagrant@nfsc ~]$ cd /mnt/upload
+-bash: cd: /mnt/upload: No such file or directory
+[vagrant@nfsc ~]$ cd /mnt
+[vagrant@nfsc mnt]$ ls
+[vagrant@nfsc mnt]$ cd /
+[vagrant@nfsc /]$ reboot
+==== AUTHENTICATING FOR org.freedesktop.login1.reboot ===
+Чтобы перезагрузить систему, необходимо пройти аутентификацию.
+Authenticating as: root
+Password:
+polkit-agent-helper-1: pam_authenticate failed: Authentication failure
+==== AUTHENTICATION FAILED ===
+Failed to execute operation: Access denied
+Must be root.
+[vagrant@nfsc /]$ sudo reboot
+Connection to 127.0.0.1 closed by remote host.
+Connection to 127.0.0.1 closed.
+sergey@Ubuntu-Desktop:~/vagrant/NFS$
